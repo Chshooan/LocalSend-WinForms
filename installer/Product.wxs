@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  LocalSend-WinForms - Windows Installer package (MSI).
+
+  Build (via ..\LocalSendWin\tools\build-installer.ps1, or directly):
+      dotnet build Product.wixproj -c Release -p:AppDir=<published app directory>
+
+  NOTE ON THE WiX v4 SCHEMA: unlike WiX v3, a v4 MSI is authored under a single
+  <Package> element - there is no <Wix><Product> wrapper. Anything that used to be
+  inside <Product> (properties, directories, features, UI, launch conditions) is
+  now a child of <Package>. The only other v3 -> v4 difference that bites here is
+  <MajorUpgrade>, which now needs an explicit DowngradeErrorMessage.
+
+  What this package provides
+  ==========================
+   * A user-chosen install location (WixUI_InstallDir -> "Choose Install Location").
+   * Optional Start Menu entry  (feature checkbox, ON  by default)
+   * Optional Desktop shortcut  (feature checkbox, OFF by default)
+   * An Add/Remove Programs entry that records the install location, so "Modify"
+     and "Repair" also work from Windows' own UI.
+   * Clean removal: shortcuts, the Start Menu folder, the install folder, and every
+     registry value this package or the app running under it created.
+   * A launch condition that refuses to install without the .NET 8 Windows Desktop
+     runtime, pointing at the download.
+
+  Why the runtime is detected through the shared-framework directory instead of the
+  registry: modern .NET (Core/5+/8) leaves no readable "installed version" value in
+  HKLM, and a per-user SDK-style install is not reflected there at all - only the
+  shared framework folder proves that a desktop runtime actually exists.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:U="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <?define ProductName = "LocalSend-WinForms" ?>
+  <?define Manufacturer = "LocalSend-WinForms" ?>
+  <!--
+    UPGRADE CODE - NEVER change this unless the product identity itself changes.
+    Every version must share it, otherwise a new build shows up in Add/Remove
+    Programs as a separate product instead of upgrading the previous one.
+    Generate a fresh one only when a side-by-side install is deliberate.
+  -->
+  <?define UpgradeCode = "{8F1C0A64-5DE3-4B4A-9D2E-6C7B1A9E4D52}" ?>
+  <?define RuntimeDownloadUrl = "https://dotnet.microsoft.com/download/dotnet/8.0" ?>
+
+  <!--
+    Without this, the license page shows nothing but a Lorem ipsum placeholder.
+    The agreement shown here is deliberately short: the app is MIT-licensed and
+    the full text lives at the URL below.
+  -->
+  <?define LicenseRtf = "license.rtf" ?>
+
+  <!-- Root element of a WiX v4 MSI. -->
+  <!--
+    Architecture is a BUILD-time decision in WiX v4 (InstallerPlatform=x64 in the
+    .wixproj), not an attribute here - the app is a 64-bit WinForms binary and the
+    prerequisite runtime is the x64 one, so the package must be built with -arch x64.
+  -->
+  <!--
+    Language=1033 pins the package to the US-English install UI, so the wizard and
+    the Add/Remove Programs entry stay English even if the machine is not.
+  -->
+  <Package Name="$(var.ProductName)"
+           Manufacturer="$(var.Manufacturer)"
+           Version="1.0.0"
+           UpgradeCode="$(var.UpgradeCode)"
+           Scope="perMachine"
+           Language="1033">
+    <Property Id="ARPURLLINFOABOUT" Value="https://github.com/localsend/localsend"/>
+    <!--
+      The "Change" entry in Add/Remove Programs stays hidden on purpose, and it is
+      not worth fighting: neither WixUI_FeatureTree nor WixUI_InstallDir offers a
+      way back to the feature page once the wizard is done, so an entry there would
+      only look broken. Anything a user forgot to tick can still be fixed by
+      reinstalling with the same command line (MSIADDLOCAL=...).
+    -->
+
+    <MajorUpgrade AllowSameVersionUpgrades="yes"
+                  DowngradeErrorMessage="A newer version of $(var.ProductName) is already installed. Setup will exit."/>
+    <MediaTemplate EmbedCab="yes"/>
+
+  <!-- ================================================================ -->
+    <!-- Shell / Add Remove Programs                                     -->
+  <!-- ================================================================ -->
+    <!--
+      WiX v4 ships only three UI variants - Minimal, FeatureTree, InstallDir -
+      and none of them has BOTH the feature checkboxes and a dedicated
+      "Choose Install Location" page. WixUI_FeatureTree is the one that carries
+      the checkboxes, so it is used here:
+
+        Welcome -> License -> Feature Selection (both checkboxes) -> Ready -> ...
+
+      Its CustomizeDlg shows the install path of the configurable directory and
+      has a "Browse..." button, which opens the standard folder browser and writes
+      the result into INSTALLFOLDER - see the _BrowseProperty SetProperty below.
+      (In WiX v3 the equivalent dialog was called FeatureSelectionDlg; in v4 it
+      is CustomizeDlg, so do not go looking for "FeatureSelection" in the MSI.)
+    -->
+    <U:WixUI Id="WixUI_FeatureTree"/>
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.LicenseRtf)"/>
+
+    <Icon Id="ProductIcon" SourceFile="$(AppDir)\Resources\logo.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="ProductIcon"/>
+    <Property Id="ARPHELPLINK" Value="https://github.com/localsend/localsend"/>
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER"/>
+    <!--
+      Without this, the "Browse..." button on the Feature Selection page would open
+      the folder browser with an empty starting directory. The browser writes its
+      result to _BrowseProperty, which then lands in INSTALLFOLDER.
+    -->
+    <SetProperty Id="_BrowseProperty" Value="[WIXUI_INSTALLDIR]" Before="CostFinalize"/>
+    <!--
+      A Property's Value may not reference another property (WiX refuses it with
+      WIX1077), so the ARP "install location" is filled in with SetProperty, which
+      is the v4-sanctioned way of deriving one property from another.
+    -->
+    <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" Before="CostFinalize"/>
+
+  <!-- ================================================================ -->
+    <!-- Runtime prerequisite                                            -->
+  <!-- ================================================================ -->
+    <!--
+      Set by the search below to the path of the Windows Desktop shared framework
+      directory, which is proof that a .NET desktop runtime is installed.
+    -->
+    <!--
+      WiX v4's DirectorySearch has no Name attribute: the path is the full path of
+      the directory to look for, so point it straight at the shared framework.
+    -->
+    <Property Id="DOTNET_WINDOWS_DESKTOP_FRAMEWORK">
+      <DirectorySearch Id="FindWindowsDesktopFramework"
+                       Path="[ProgramFiles64Folder]dotnet\shared\Microsoft.WindowsDesktop.App"/>
+    </Property>
+
+  <!-- ================================================================ -->
+    <!-- Directories                                                     -->
+  <!-- ================================================================ -->
+    <!--
+      WiX v4 knows the standard folders, so only the ones under them need naming.
+      Keeping TARGETDIR / ProgramFiles64Folder / ProgramMenuFolder / DesktopFolder
+      as explicit <Directory> elements compiles, but produces WIX5437 warnings.
+    -->
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="$(var.ProductName)">
+        <Directory Id="InstallResourcesFolder" Name="Resources"/>
+      </Directory>
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="$(var.ProductName)"/>
+    </StandardDirectory>
+    <StandardDirectory Id="DesktopFolder"/>
+
+  <!-- ================================================================ -->
+    <!-- Application files                                               -->
+  <!-- ================================================================ -->
+    <ComponentGroup Id="ApplicationFiles" Directory="INSTALLFOLDER">
+      <!--
+        The .pdb is deliberately not shipped: it is a debugging aid and would let
+        anyone decompile the product with tools already on the machine.
+      -->
+      <!--
+        Component codes are EXPLICIT on purpose. Guid="*" sounds convenient, but the
+        generated code is only recorded in the build's .wixpdb: the next release would
+        emit different component codes, so Windows would see new components instead of
+        updating the existing ones and the install folder would keep stale duplicates.
+      -->
+      <Component Id="ProductComponent"
+                 Guid="{3E7B5A2C-6D41-4F8E-9A0B-1C2D3E4F5A6B}">
+        <!-- Removing the last file leaves the folder behind, so take it too. -->
+        <RemoveFolder Id="RemoveInstallFolder" Directory="INSTALLFOLDER" On="uninstall"/>
+        <File Id="ExeFile" Name="LocalSend-WinForms.exe"
+              Source="$(AppDir)\LocalSend-WinForms.exe" KeyPath="yes"/>
+        <File Id="AssemblyFile" Name="LocalSend-WinForms.dll"
+              Source="$(AppDir)\LocalSend-WinForms.dll"/>
+        <File Id="DepsFile" Name="LocalSend-WinForms.deps.json"
+              Source="$(AppDir)\LocalSend-WinForms.deps.json"/>
+        <File Id="RuntimeConfigFile" Name="LocalSend-WinForms.runtimeconfig.json"
+              Source="$(AppDir)\LocalSend-WinForms.runtimeconfig.json"/>
+      </Component>
+
+      <Component Id="IconResourcesComponent" Directory="InstallResourcesFolder"
+                 Guid="{7C4D9E1F-2A3B-4C5D-8E9F-0A1B2C3D4E5F}">
+        <File Id="LogoIcoFile" Name="logo.ico"
+              Source="$(AppDir)\Resources\logo.ico" KeyPath="yes"/>
+        <File Id="LogoSvgFile" Name="localsend-win.svg"
+              Source="$(AppDir)\Resources\localsend-win.svg"/>
+      </Component>
+    </ComponentGroup>
+
+  <!-- ================================================================ -->
+    <!-- Uninstall cleanup - machine context                             -->
+  <!-- ================================================================ -->
+    <!--
+      Shortcuts and their folders disappear with the components that own them.
+      What is left over is whatever the *application* wrote while running: the
+      Explorer context-menu verb and the start-at-login entry, both per user.
+      The machine-wide marker below is this component's key path (MSI needs one).
+
+      The install folder is removed too, so "Add/Remove Programs -> Remove" leaves
+      nothing behind. User data (%LocalAppData%\LocalSendWin: settings, TLS
+      certificate, logs) is deliberately NOT touched - deleting the certificate
+      would make every already-paired device change its fingerprint.
+
+      Split in two: MSI forbids mixing per-user and per-machine data inside a
+      single component (ICE57), so the per-user removals live in their own one.
+    -->
+    <Component Id="UninstallCleanupComponent" Directory="INSTALLFOLDER"
+               Guid="{5A1B7D93-4E28-4B6F-8D31-9E0A2C4B6D81}">
+      <!--
+        v4 replaced <RemoveRegistry> with two elements: RemoveRegistryKey deletes a
+        key plus everything under it, RemoveRegistryValue deletes a single value.
+      -->
+      <RegistryValue Root="HKLM"
+                     Key="Software\$(var.ProductName)"
+                     Name="Installed"
+                     Type="integer"
+                     Value="1"
+                     KeyPath="yes"/>
+      <RegistryValue Root="HKLM"
+                     Key="Software\$(var.ProductName)"
+                     Name="InstallDir"
+                     Type="string"
+                     Value="[INSTALLFOLDER]"/>
+    </Component>
+
+  <!-- ================================================================ -->
+    <!-- Uninstall cleanup - user context                                -->
+  <!-- ================================================================ -->
+    <!--
+      The Explorer verb and the start-at-login entry live in the current user's
+      hive, because that is where the app registers them. Key path under HKCU, or
+      ICE38/ICE43 reject the component outright.
+    -->
+    <Component Id="UserContextCleanupComponent" Directory="INSTALLFOLDER"
+               Guid="{6F3A1E58-0C29-4B7D-9A64-8D2B5C7E9F13}">
+      <!-- The app registers this verb at startup; drop the whole tree. -->
+      <RemoveRegistryKey Root="HKCU" Key="Software\Classes\*\shell\$(var.ProductName)"
+                         Action="removeOnUninstall"/>
+      <!-- and the "start with Windows" flag, if the user turned it on. -->
+      <!-- RemoveRegistryValue has no Action at all: deleting a single value is
+           inherently an uninstall-time operation. -->
+      <RemoveRegistryValue Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Run"
+                           Name="$(var.ProductName)"/>
+      <RegistryValue Root="HKCU"
+                     Key="Software\$(var.ProductName)"
+                     Name="ShellContextMenuRegistered"
+                     Type="integer"
+                     Value="1"
+                     KeyPath="yes"/>
+    </Component>
+
+  <!-- ================================================================ -->
+    <!-- Shortcuts                                                       -->
+  <!-- ================================================================ -->
+    <!--
+      Each component carries one registry value purely as its key path (MSI needs
+      something to compare when deciding whether the component is installed).
+    -->
+    <Component Id="StartMenuShortcutComponent" Directory="ApplicationProgramsFolder"
+               Guid="{9D2E4A17-8B63-4C0D-A5E9-3F1B7C8D2E40}">
+      <Shortcut Id="StartMenuShortcut"
+                Name="$(var.ProductName)"
+                Description="Send and receive files over the LAN with LocalSend"
+                Target="[INSTALLFOLDER]LocalSend-WinForms.exe"
+                WorkingDirectory="INSTALLFOLDER"
+                Icon="ProductIcon"/>
+      <!-- Drops the Start Menu folder once its last shortcut is gone. -->
+      <RemoveFolder Id="RemoveStartMenuFolder" Directory="ApplicationProgramsFolder" On="uninstall"/>
+      <RegistryValue Root="HKCU"
+                     Key="Software\$(var.ProductName)\Shortcuts"
+                     Name="StartMenuShortcut"
+                     Type="integer"
+                     Value="1"
+                     KeyPath="yes"/>
+    </Component>
+
+    <Component Id="DesktopShortcutComponent" Directory="DesktopFolder"
+               Guid="{2B8F6C35-1D47-4E9A-B3C6-7A5D9E1F4B28}">
+      <Shortcut Id="DesktopShortcut"
+                Name="$(var.ProductName)"
+                Description="Send and receive files over the LAN with LocalSend"
+                Target="[INSTALLFOLDER]LocalSend-WinForms.exe"
+                WorkingDirectory="INSTALLFOLDER"
+                Icon="ProductIcon"/>
+      <RegistryValue Root="HKCU"
+                     Key="Software\$(var.ProductName)\Shortcuts"
+                     Name="DesktopShortcut"
+                     Type="integer"
+                     Value="1"
+                     KeyPath="yes"/>
+    </Component>
+
+  <!-- ================================================================ -->
+    <!-- Feature tree shown on the "Feature Selection" page              -->
+  <!-- ================================================================ -->
+    <!--
+      Level=1 -> the Feature Selection page shows the Start Menu shortcut as
+      checked; Level=0 -> the Desktop shortcut starts unchecked. Both stay
+      configurable on that page, so a user can always add the desktop icon later
+      via "Modify".
+    -->
+    <Feature Id="MainFeature"
+             Title="$(var.ProductName)"
+             Description="Application files and the Add/Remove Programs entry."
+             Level="1"
+             ConfigurableDirectory="INSTALLFOLDER">
+      <ComponentGroupRef Id="ApplicationFiles"/>
+      <ComponentRef Id="UninstallCleanupComponent"/>
+      <ComponentRef Id="UserContextCleanupComponent"/>
+
+      <Feature Id="StartMenuShortcutFeature"
+               Title="Start Menu shortcut"
+               Description="Adds LocalSend-WinForms to the Start Menu folder.">
+        <ComponentRef Id="StartMenuShortcutComponent"/>
+      </Feature>
+
+      <Feature Id="DesktopShortcutFeature"
+               Title="Desktop shortcut"
+               Description="Adds a LocalSend-WinForms icon on the desktop."
+               Level="0">
+        <ComponentRef Id="DesktopShortcutComponent"/>
+      </Feature>
+    </Feature>
+
+  <!-- ================================================================ -->
+    <!-- Launch condition                                                -->
+  <!-- ================================================================ -->
+    <!--
+      Product-level launch condition (the MSI LaunchCondition table). WiX v4 spells
+      this <Launch Condition="..." Message="..."/>; the <Condition> element is no
+      longer a child of <Package>, <Feature>, <Component> or <Property>.
+      The condition is the requirement, so it blocks exactly when the property is
+      empty, i.e. when the Windows Desktop runtime could not be found.
+    -->
+    <Launch Condition="DOTNET_WINDOWS_DESKTOP_FRAMEWORK"
+            Message="LocalSend-WinForms needs the Microsoft .NET 8 Windows Desktop Runtime (x64).
+Install it from $(var.RuntimeDownloadUrl), then run this setup again."/>
+  </Package>
+</Wix>

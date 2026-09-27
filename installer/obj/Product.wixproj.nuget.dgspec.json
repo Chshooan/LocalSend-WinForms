@@ -1,0 +1,50 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\Chsho\\WorkBuddy\\LocalSend-Win32\\installer\\Product.wixproj": {}
+  },
+  "projects": {
+    "C:\\Users\\Chsho\\WorkBuddy\\LocalSend-Win32\\installer\\Product.wixproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Chsho\\WorkBuddy\\LocalSend-Win32\\installer\\Product.wixproj",
+        "projectName": "Product",
+        "projectPath": "C:\\Users\\Chsho\\WorkBuddy\\LocalSend-Win32\\installer\\Product.wixproj",
+        "packagesPath": "C:\\Users\\Chsho\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Chsho\\WorkBuddy\\LocalSend-Win32\\installer\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Chsho\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "native": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "native": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "WixToolset.UI.wixext": {
+              "target": "Package",
+              "version": "[4.0.4, )"
+            }
+          }
+        }
+      }
+    }
+  }
+}

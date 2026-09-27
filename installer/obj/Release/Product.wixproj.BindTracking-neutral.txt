@@ -1,0 +1,17 @@
+BuiltPdbOutput	C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\obj\Release\Product.wixpdb
+BuiltTargetOutput	C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\obj\Release\Product.msi
+Input	C:/Users/Chsho/WorkBuddy/LocalSend-Win32/builds/LocalSend-WinForms-1.0.0+20260927-155504\LocalSend-WinForms.deps.json
+Input	C:/Users/Chsho/WorkBuddy/LocalSend-Win32/builds/LocalSend-WinForms-1.0.0+20260927-155504\LocalSend-WinForms.dll
+Input	C:/Users/Chsho/WorkBuddy/LocalSend-Win32/builds/LocalSend-WinForms-1.0.0+20260927-155504\LocalSend-WinForms.exe
+Input	C:/Users/Chsho/WorkBuddy/LocalSend-Win32/builds/LocalSend-WinForms-1.0.0+20260927-155504\LocalSend-WinForms.runtimeconfig.json
+Input	C:/Users/Chsho/WorkBuddy/LocalSend-Win32/builds/LocalSend-WinForms-1.0.0+20260927-155504\Resources\localsend-win.svg
+Input	C:/Users/Chsho/WorkBuddy/LocalSend-Win32/builds/LocalSend-WinForms-1.0.0+20260927-155504\Resources\logo.ico
+Input	C:\Users\Chsho\.nuget\packages\wixtoolset.ui.wixext\4.0.4\wixext4\WixToolset.UI.wixext.dll
+Intermediate	C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\obj\Release\#cab1.cab
+Intermediate	C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\obj\Release\WixToolset.UI.wixext_0iy2TSmvvqbDj4DPr4WbhNZOgkc\wix-ir\bannrbmp.bmp
+Intermediate	C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\obj\Release\WixToolset.UI.wixext_0iy2TSmvvqbDj4DPr4WbhNZOgkc\wix-ir\dlgbmp.bmp
+Intermediate	C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\obj\Release\WixToolset.UI.wixext_0iy2TSmvvqbDj4DPr4WbhNZOgkc\wix-ir\exclamic.ico
+Intermediate	C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\obj\Release\WixToolset.UI.wixext_0iy2TSmvvqbDj4DPr4WbhNZOgkc\wix-ir\info.ico
+Intermediate	C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\obj\Release\WixToolset.UI.wixext_0iy2TSmvvqbDj4DPr4WbhNZOgkc\wix-ir\new.ico
+Intermediate	C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\obj\Release\WixToolset.UI.wixext_0iy2TSmvvqbDj4DPr4WbhNZOgkc\wix-ir\uica.dll-1
+Intermediate	C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\obj\Release\WixToolset.UI.wixext_0iy2TSmvvqbDj4DPr4WbhNZOgkc\wix-ir\up.ico

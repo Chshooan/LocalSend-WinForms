@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "QWVAYk0lBLo=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Chsho\\WorkBuddy\\LocalSend-Win32\\installer\\Product.wixproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Chsho\\.nuget\\packages\\wixtoolset.ui.wixext\\4.0.4\\wixtoolset.ui.wixext.4.0.4.nupkg.sha512"
+  ],
+  "logs": []
+}

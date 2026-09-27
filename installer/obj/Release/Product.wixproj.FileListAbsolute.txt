@@ -1,0 +1,8 @@
+C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\obj\Release\Product.wixproj.CoreCompileInputs.cache
+C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\obj\Release\Product.msi
+C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\obj\Release\Product.wixpdb
+C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\obj\Release\Product.wixproj.BindTracking-neutral.txt
+C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\bin\Release\Product.msi
+C:\Users\Chsho\WorkBuddy\LocalSend-Win32\installer\bin\Release\Product.wixpdb
+C:\Users\Chsho\AppData\Local\Temp\probe\Product.msi
+C:\Users\Chsho\AppData\Local\Temp\probe\Product.wixpdb

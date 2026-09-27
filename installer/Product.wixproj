@@ -1,0 +1,48 @@
+<!--
+  LocalSend-WinForms - Windows Installer package (MSI).
+
+  Build:
+      powershell -ExecutionPolicy Bypass -File ..\LocalSendWin\tools\build-installer.ps1
+
+  or, directly:
+      dotnet build Product.wixproj -c Release -p:AppDir=<published app directory>
+
+  AppDir is a preprocessor variable consumed by Product.wxs; it points at the
+  framework-dependent publish output of the app. Nothing is hard-coded in the .wxs.
+-->
+<!-- The SDK version must be part of the attribute; MSBuild will not look it up otherwise. -->
+<Project Sdk="WixToolset.Sdk/4.0.4">
+
+  <PropertyGroup>
+    <OutputType>Package</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Verbosity>minimal</Verbosity>
+
+    <!-- Called with -p:AppDir=... (see build-installer.ps1) -->
+    <AppDir Condition="'$(AppDir)' == ''">$(MSBuildThisFileDirectory)..\builds\app</AppDir>
+    <!--
+      The app ships as a 64-bit WinForms binary and the bundled/required runtime is
+      the x64 one, so the package itself must be an x64 package. In WiX v4 the
+      architecture is a build-time property, not an attribute on <Package>.
+    -->
+    <InstallerPlatform>x64</InstallerPlatform>
+    <DefineConstants>AppDir=$(AppDir)</DefineConstants>
+
+    <!--
+      ICE61 fires whenever a package's own version equals the highest version in its
+      Upgrade table - i.e. for every build of the SAME version, which is legal here
+      (MajorUpgrade AllowSameVersionUpgrades="yes" exists exactly for that). It is
+      noise, not a defect: bump <Package Version> before shipping a real release and
+      the warning goes away on its own.
+    -->
+    <SuppressSpecificWarnings>1076</SuppressSpecificWarnings>
+  </PropertyGroup>
+
+  <!-- WixUI_InstallDir / WixUI_FeatureTree come from this extension. -->
+  <!-- The SDK already globs *.wxs next to the project, so no explicit WixSource item: -->
+  <!-- adding one wraps the file in a second <Wix> root and the build fails. -->
+  <ItemGroup>
+    <PackageReference Include="WixToolset.UI.wixext" Version="4.0.4"/>
+  </ItemGroup>
+
+</Project>

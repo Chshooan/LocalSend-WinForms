@@ -1,0 +1,79 @@
+{
+  "version": 3,
+  "targets": {
+    "native,Version=v0.0": {
+      "WixToolset.UI.wixext/4.0.4": {
+        "type": "package",
+        "build": {
+          "build/WixToolset.UI.wixext.targets": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "WixToolset.UI.wixext/4.0.4": {
+      "sha512": "X3DhDPkf2heL7rfl6twwLb3UrlXjT2YlSUr6BSuieEGJoiJnFuUZOCdpdnn4cRODQeUcWYdQn98nWBwpiR0R9g==",
+      "type": "package",
+      "path": "wixtoolset.ui.wixext/4.0.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "build/WixToolset.UI.wixext.targets",
+        "wix.png",
+        "wixext4/WixToolset.UI.wixext.dll",
+        "wixtoolset.ui.wixext.4.0.4.nupkg.sha512",
+        "wixtoolset.ui.wixext.nuspec"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "native,Version=v0.0": [
+      "WixToolset.UI.wixext >= 4.0.4"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\Chsho\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\Users\\Chsho\\WorkBuddy\\LocalSend-Win32\\installer\\Product.wixproj",
+      "projectName": "Product",
+      "projectPath": "C:\\Users\\Chsho\\WorkBuddy\\LocalSend-Win32\\installer\\Product.wixproj",
+      "packagesPath": "C:\\Users\\Chsho\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Chsho\\WorkBuddy\\LocalSend-Win32\\installer\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\Chsho\\AppData\\Roaming\\NuGet\\NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net8.0"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "native": {
+          "targetAlias": "net8.0",
+          "projectReferences": {}
+        }
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      }
+    },
+    "frameworks": {
+      "native": {
+        "targetAlias": "net8.0",
+        "dependencies": {
+          "WixToolset.UI.wixext": {
+            "target": "Package",
+            "version": "[4.0.4, )"
+          }
+        }
+      }
+    }
+  }
+}
