@@ -220,4 +220,4 @@
 
 ## 许可证
 
-本项目以 MIT 许可证发布。LocalSend 协议与官方客户端版权归 [LocalSend 项目](https://localsend.org) https://github.com/localsend/localsend 所有。
+本项目以 GPL3 许可证发布。LocalSend 协议与官方客户端版权归 [LocalSend 项目](https://localsend.org) https://github.com/localsend/localsend 所有。
