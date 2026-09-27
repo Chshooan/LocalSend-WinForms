@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>LocalSendWinForms</RootNamespace>
+    <AssemblyName>LocalSend-WinForms</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>AnyCPU;x64</Platforms>
+    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>latest</LangVersion>
+
+    <!-- Assembly / product metadata shown in the tray "About" dialog and file properties -->
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyTitle>LocalSend-WinForms</AssemblyTitle>
+    <Product>LocalSend-WinForms</Product>
+    <Company>LocalSend-WinForms</Company>
+    <Description>Windows LAN file transfer tool (WinForms / .NET 8) speaking the LocalSend v2 protocol.</Description>
+    <Copyright>MIT License</Copyright>
+
+    <!-- Localization resources are built from Localization/Strings.*.json (custom loader). -->
+    <EnableDefaultNoneItems>true</EnableDefaultNoneItems>
+  </PropertyGroup>
+
+  <!--
+    The app is intentionally dependency-free: JSON (System.Text.Json), TLS (SslStream),
+    the WinForms UI and the shell notification surface are all part of the base framework.
+
+    OPTIONAL richer Action-Center toasts: uncomment the package reference below and the
+    USE_WINRT_TOAST code path in Services/NotificationService.cs. See README.md.
+    <ItemGroup>
+      <PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
+    </ItemGroup>
+  -->
+
+  <ItemGroup>
+    <None Update="Resources\logo.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\localsend-win.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
